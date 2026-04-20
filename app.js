@@ -2,6 +2,8 @@ const express = require('express');
 const { nanoid } = require('nanoid');
 const Redis = require('ioredis');
 
+require('dotenv').config();
+
 const app = express();
 const PORT = 3000;
 
@@ -9,7 +11,16 @@ const redis = new Redis();
 
 app.use(express.json()); // Middleware para parsear JSON
 
-app.post('/shorten', async (req, res) => {
+function validateAdminToken(req, res, next) {
+    const token = req.headers['authorization'];
+    if (token === `Bearer ${process.env.ADMIN_TOKEN}`) {
+        next();
+    } else {
+        res.status(401).json({ error: 'Token de autenticação inválido' });
+    }
+}
+
+app.post('/shorten', validateAdminToken, async (req, res) => {
     try {
         const originalUrl = new URL(req.body.url).href;
         const newUrl = nanoid(6);
