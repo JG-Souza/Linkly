@@ -7,21 +7,25 @@ const PORT = 3000;
 
 const redis = new Redis();
 
-app.use(express.json());
+app.use(express.json()); // Middleware para parsear JSON
 
 app.post('/shorten', async (req, res) => {
-    const originalUrl = req.body.url;
-    const newUrl = nanoid(6);
-
     try {
+        const originalUrl = new URL(req.body.url).href;
+        const newUrl = nanoid(6);
+
         await redis.set(newUrl, originalUrl);
         res.status(200).json({
             originalUrl: originalUrl,
             newUrl: newUrl
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Erro ao salvar no Redis'});
+        if (err instanceof TypeError) {
+            return res.status(400).json({ error: 'URL inválida' });
+        } else {
+            console.error(err);
+            res.status(500).json({ error: 'Erro ao salvar no Redis'});
+        }
     }
 });
 
