@@ -14,7 +14,7 @@ app.post('/shorten', async (req, res) => {
         const originalUrl = new URL(req.body.url).href;
         const newUrl = nanoid(6);
 
-        await redis.set(newUrl, originalUrl);
+        await redis.set(newUrl, originalUrl, 'ex', 60 * 60 * 24 * 7);
         res.status(200).json({
             originalUrl: originalUrl,
             newUrl: newUrl
