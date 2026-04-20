@@ -1,11 +1,14 @@
 const express = require('express');
 const { nanoid } = require('nanoid');
 const Redis = require('ioredis');
+const useragent = require('express-useragent');
 
 require('dotenv').config();
 
 const app = express();
 const PORT = 3000;
+
+app.use(useragent.express());
 
 const redis = new Redis();
 
@@ -44,6 +47,9 @@ app.get('/:shortUrl', async (req, res) => {
     try {
         const result = await redis.get(req.params.shortUrl);
             if (result) {
+                await redis.incr(`stats:${req.params.shortUrl}:clicks`);
+                await redis.hincrby(`stats:${req.params.shortUrl}:clicks_by_date`, new Date().toISOString().slice(0, 10), 1);
+                await redis.hincrby(`stats:${req.params.shortUrl}:clicks_by_browser`, req.useragent?.browser || 'Unknown', 1);
                 res.redirect(`${result}`);
             } else {
                 res.status(404).json({ error: 'URL não encontrada' });
