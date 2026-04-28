@@ -10,7 +10,10 @@ const PORT = 3000;
 
 app.use(useragent.express());
 
-const redis = new Redis();
+const redis = new Redis({
+    host: process.env.REDIS_HOST,
+    password: process.env.REDIS_PASSWORD
+});
 
 app.use(express.json()); // Middleware para parsear JSON
 
