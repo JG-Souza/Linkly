@@ -46,4 +46,4 @@ jobs:
             docker pull $IMAGE
             docker stop urlshortener || true
             docker rm urlshortener || true
-            docker run -d --name urlshortener -p 3000:3000 $IMAGE
+            docker run -d --name urlshortener -p 3000:3000 --env-file ~/.env $IMAGE
